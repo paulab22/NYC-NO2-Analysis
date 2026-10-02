@@ -1,0 +1,102 @@
+---
+title: "Final Project Report"
+author: "Paula Buitrago"
+date: "05-17-2025"
+output: html_document
+---
+
+### Introduction: 
+
+For my final project, I chose to answer the question: **Do NO2 levels differ significantly between the Upper West Side and Queens Village in New York?** I selected this topic because poorer or historically marginalized communities, like Queens village, often experience worse environmental conditions, which can reflect systematic inequality. Residents exposed to high NO2 levels could face health risks and would need targeted public health aid. This evidence could serve as an incentive to add green zones, rerouting traffic, or installing air monitoring stations in affected areas.
+
+To answer my question, I used the *Air Quality* dataset found in data.gov through the NYC Open Data. It provides public access to detailed air monitoring records collected across various locations in New York from 2009-2023. This data can be accessed though the following link: https://catalog.data.gov/dataset/air-quality. The dataset contains 18,862 observations and 12 variables, with each row representing an air quality measurement taken at a specific time and location. Among the variables included are "Name" (the pollutant type and health impact), "Data.Value" (the recorded concentration), Geo.Place.Name (the neighborhood where the reading was taken), and "Measure.Info" (the units of measurement, such as ppb). 
+
+### Data Analysis: 
+
+To analyze the data, I will begin by cleaning the dataset and conducting exploratory data analysis (EDA) to better understand the structure and quality of the data. I will filter the dataset to include only nitrogen dioxide (NO2) measurements reported in ppb to ensure consistency in the units being analyzed. Using this filtered data, I will create a box plot to visualize the distribution of NO2 levels across various New York neighborhoods, which will help identify patterns, outliers, and differences in concentration. Additionally, I will group the dataset by the "Name" variable, calculate the mean NO2 values for each neighborhood, and then sort these means in descending order to highlight areas with the highest and lowest average concentrations. This combination of visual and numerical analysis will provide a clearer picture of how NO2 levels vary across the city and specifically between the Upper West Side and Queens Village.
+
+
+```{r}
+library(tidyverse)
+
+air_data <- read.csv("Air_Quality.csv")
+
+head(air_data)
+tail(air_data)
+dim(air_data)
+str(air_data)
+summary(air_data)
+
+```
+
+```{r}
+no2_data <- filter(air_data, Name == "Nitrogen dioxide (NO2)" & Measure.Info == "ppb")
+
+ggplot(no2_data, aes(x = Geo.Place.Name, y = Data.Value)) +
+  geom_boxplot(fill = rainbow(length(unique(no2_data$Geo.Place.Name)))) +
+  labs(x = "Cities",
+       y = "NO2 level (ppb)",
+       title = "NO2 Levels Across NYC Neighborhoods") +
+  theme(axis.text.x = element_text(angle = 80, hjust = 1, size = 5))
+
+```
+
+```{r}
+data_df <- air_data |>
+  group_by(Name) |>
+  summarise(mean_value = mean(Data.Value, na.rm = TRUE)) |>
+  arrange(desc(mean_value))
+
+data_df
+
+```
+
+### Statistical Analysis:
+
+For the statistical analysis, I will perform a difference in means hypothesis test to determine whether the average NO2 levels in Upper West Side and Queens Village are significantly different. This type of analysis is appropriate because it compares the means of two independent groups using continuous numerical data. 
+
+**Difference in means - t test**
+
+
+*Hypotheses*
+
+$H_0$: $\mu_1$ = $\mu_2$ 
+$H_a$: $\mu_d$ $\neq$ $\mu_2$
+
+Where, 
+
+$\mu_1$ = mean NO2 level in "Upper West Side (CD7)"
+$\mu_2$ = mean NO2 level in "Queens Village (CD13)"
+
+
+
+```{r}
+upper_west <- filter(no2_data, Geo.Place.Name == "Upper West Side (CD7)")
+head(upper_west)
+
+queens <- filter(no2_data, Geo.Place.Name == "Queens Village (CD13)")
+head(queens)
+```
+
+
+```{r}
+t.test(upper_west$Data.Value, queens$Data.Value, alternative = "two.sided")
+```
+
+### Conclusion and Future Directions:
+
+The results of the Welch Two Sample t-test show a statistically significant difference in the mean NO2 levels between Upper West Side and Queens Village. The test indicated a t-value of 6.972 with approximately 85.68 degrees of freedom, and a p-value of 6.108e-10, which is much lower than 0.05. The 95% confidence interval for the difference in means ranges from 5.07 to 9.11, suggesting that, on average, the NO2 concentration in the Upper West Side is notably higher than in Queens Village. Specifically, the average NO2 level in the Upper West Side was 24.06 ppb, compared to 16.97 ppb in Queens Village.
+
+These findings have important implications for public health and environmental justice. The significant difference in NO2 levels suggests that residents in the Upper West Side may be exposed to more traffic-related air pollution than those in Queens Village. This could reflect differences in urban layout, traffic density, or distance to major roadways. For future research, it would be valuable to expand the analysis to more neighborhoods and include variables such as traffic data, industrial activity, and population density. Additionally, conducting a time-series analysis could help determine whether these differences persist across seasons or years, which would provide information about long-term exposure patterns and policy intervention needs.
+
+
+### References:
+
+Bobbitt, Zach (2021). *How to Rotate Axis Labels in ggplot2 (With Examples)*. https://www.statology.org/rotate-axis-labels-ggplot2/. Accessed April 30, 2025. I used this website to research how to rotate the x-axis labels for my box plot. 
+
+NYC OpenData (2025). *Air Quality*. https://catalog.data.gov/dataset/air-quality. Accessed April 28, 2025.
+
+Stack Overflow (2006). *Dynamically coloring boxplot in R* https://stackoverflow.com/questions/40005888/dynamically-coloring-boxplot-in-r. Accessed 30, 2025. I used this website to research how to add the rainbow effect to my box plot. 
+ 
+
+

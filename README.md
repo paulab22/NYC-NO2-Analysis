@@ -1,10 +1,8 @@
-# NYC-NO2-Analysis
-
 # NYC NO2 Air Pollution Analysis
 
 ## 📊 View the Full Report
 
-[**→ Open the Interactive HTML Report**](Final-Project.html)
+[**→ Open the Interactive HTML Report**]([Final-Project.html](https://paulab22.github.io/NYC-NO2-Analysis/))
 
 ---
 
